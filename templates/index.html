@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Recommender System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="40" height="40" rx="8" fill="#E50914"/>
+                    <path d="M12 10L16 30M24 10L28 30M12 10L24 10M16 30L28 30M14 20H26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <h1>Netflix Recommender</h1>
+            </div>
+            <div class="stats" id="stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="total-titles">-</span>
+                    <span class="stat-label">Total Titles</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="movies">-</span>
+                    <span class="stat-label">Movies</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="tv-shows">-</span>
+                    <span class="stat-label">TV Shows</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-container">
+                <input
+                    type="text"
+                    id="search-input"
+                    placeholder="Search for a Netflix title..."
+                    autocomplete="off"
+                >
+                <div class="search-suggestions" id="suggestions"></div>
+            </div>
+
+            <div class="options">
+                <div class="option-group">
+                    <label for="method-select">Recommendation Method:</label>
+                    <select id="method-select">
+                        <option value="tfidf">TF-IDF (Fast)</option>
+                        <option value="embedding" disabled>Sentence Transformer (Better Quality)</option>
+                    </select>
+                </div>
+
+                <div class="option-group">
+                    <label for="count-select">Number of Recommendations:</label>
+                    <select id="count-select">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="15">15</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="recommend-btn" class="recommend-btn" disabled>
+                Get Recommendations
+            </button>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Finding recommendations...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div class="error-message" id="error-message"></div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="results-section">
+            <!-- Source Title -->
+            <div class="source-title" id="source-title"></div>
+
+            <!-- Recommendations Grid -->
+            <div class="recommendations-header">
+                <h2>Recommended for You</h2>
+                <p id="rec-count"></p>
+            </div>
+            <div class="recommendations-grid" id="recommendations-grid"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
