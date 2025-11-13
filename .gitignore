@@ -8,6 +8,9 @@ venv/
 env/
 ENV/
 
+# Environment variables
+.env
+
 # Test files
 test_app.py
 
