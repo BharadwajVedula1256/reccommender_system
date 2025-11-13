@@ -8,6 +8,7 @@ A modern, interactive web interface for the Netflix content recommender system u
 - **Dual Recommendation Methods**:
   - TF-IDF based similarity (fast)
   - Sentence Transformer embeddings (better quality, requires embeddings file)
+- **TMDB Integration**: Displays movie and TV show posters and backdrop images from The Movie Database API
 - **Beautiful UI**: Netflix-inspired dark theme with smooth animations
 - **Detailed Results**: View comprehensive information including cast, director, genres, and similarity scores
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
@@ -21,6 +22,8 @@ reccommender_system/
 ├── netflix_embeddings.npy      # Pre-computed embeddings (optional)
 ├── Recommender.ipynb          # Original Jupyter notebook
 ├── requirements.txt           # Python dependencies
+├── .env                       # Environment variables (not in git)
+├── .env.example               # Example environment file
 ├── templates/
 │   └── index.html            # Main HTML template
 └── static/
@@ -35,10 +38,30 @@ reccommender_system/
    pip install -r requirements.txt
    ```
 
-2. **Verify dataset**:
+2. **Set up TMDB API** (for movie poster images):
+
+   a. Get a free API key from The Movie Database:
+      - Go to https://www.themoviedb.org/signup
+      - Create an account
+      - Navigate to Settings > API
+      - Request an API key (choose "Developer" option)
+
+   b. Create a `.env` file in the project root:
+      ```bash
+      cp .env.example .env
+      ```
+
+   c. Add your TMDB API key to the `.env` file:
+      ```
+      TMDB_API_KEY=your_actual_api_key_here
+      ```
+
+   **Note**: The app will work without TMDB API key, but won't display movie/TV show posters.
+
+3. **Verify dataset**:
    Ensure `netflix_cleaned.csv` is in the project root directory.
 
-3. **(Optional) Generate embeddings**:
+4. **(Optional) Generate embeddings**:
    If you want to use the Sentence Transformer method, run the embedding generation code from the Jupyter notebook:
    ```python
    from sentence_transformers import SentenceTransformer
@@ -120,9 +143,10 @@ Get dataset statistics.
 
 ## Technologies Used
 
-- **Backend**: Flask, Pandas, NumPy, scikit-learn, Sentence Transformers
+- **Backend**: Flask, Pandas, NumPy, scikit-learn, Sentence Transformers, python-dotenv
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
 - **ML Models**: TF-IDF Vectorizer, Sentence Transformers (all-mpnet-base-v2)
+- **External APIs**: TMDB (The Movie Database) API for movie/TV show images
 
 ## How It Works
 
@@ -130,6 +154,7 @@ Get dataset statistics.
 2. **TF-IDF Method**: Uses Term Frequency-Inverse Document Frequency to create document vectors and calculate cosine similarity
 3. **Embedding Method**: Uses pre-trained Sentence Transformers to generate semantic embeddings for more nuanced similarity matching
 4. **Recommendation**: Returns top-N most similar titles based on cosine similarity scores
+5. **Image Enhancement**: Fetches movie/TV show posters from TMDB API using title and year matching, with LRU caching to minimize API calls
 
 ## License
 

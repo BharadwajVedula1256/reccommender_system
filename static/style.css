@@ -272,11 +272,31 @@ body {
 
 /* Source Title */
 .source-title {
+    position: relative;
     background: linear-gradient(135deg, var(--netflix-red), #b20710);
     padding: 30px;
     border-radius: 12px;
     margin-bottom: 40px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.source-title::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.source-title > * {
+    position: relative;
+    z-index: 1;
 }
 
 .source-label {
@@ -339,12 +359,33 @@ body {
     transition: all 0.3s ease;
     border: 2px solid var(--border-color);
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
 }
 
 .recommendation-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
     border-color: var(--netflix-red);
+}
+
+.card-poster {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    background: var(--netflix-gray);
+    display: block;
+}
+
+.card-poster-placeholder {
+    width: 100%;
+    height: 400px;
+    background: linear-gradient(135deg, var(--netflix-gray), var(--bg-primary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    font-size: 3rem;
 }
 
 .card-header {

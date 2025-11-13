@@ -200,6 +200,16 @@ function displaySourceTitle(source) {
     const cast = source.cast || 'N/A';
     const director = source.director || 'N/A';
 
+    // Set backdrop image if available
+    if (source.backdrop_url) {
+        sourceTitleDiv.style.setProperty('--backdrop-url', `url(${source.backdrop_url})`);
+        sourceTitleDiv.style.backgroundImage = `linear-gradient(135deg, rgba(229, 9, 20, 0.9), rgba(178, 7, 16, 0.9)), var(--backdrop-url)`;
+        sourceTitleDiv.style.backgroundSize = 'cover';
+        sourceTitleDiv.style.backgroundPosition = 'center';
+    } else {
+        sourceTitleDiv.style.backgroundImage = 'linear-gradient(135deg, var(--netflix-red), #b20710)';
+    }
+
     sourceTitleDiv.innerHTML = `
         <div class="source-label">You selected:</div>
         <div class="source-name">${escapeHtml(source.title)}</div>
@@ -236,7 +246,13 @@ function createRecommendationCard(rec, index) {
     // Calculate similarity percentage
     const similarityPercent = Math.round(rec.similarity * 100);
 
+    // Poster HTML
+    const posterHtml = rec.poster_url
+        ? `<img src="${rec.poster_url}" alt="${escapeHtml(rec.title)} poster" class="card-poster" loading="lazy">`
+        : `<div class="card-poster-placeholder">🎬</div>`;
+
     card.innerHTML = `
+        ${posterHtml}
         <div class="card-header">
             <div class="card-title">${escapeHtml(rec.title)}</div>
             <div class="card-meta">

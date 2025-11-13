@@ -4,8 +4,19 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import os
+import requests
+from functools import lru_cache
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
+
+# TMDB API Configuration
+TMDB_API_KEY = os.getenv('TMDB_API_KEY', '')
+TMDB_BASE_URL = 'https://api.themoviedb.org/3'
+TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500'
 
 # Load data and prepare recommender system
 df = pd.read_csv('netflix_cleaned.csv')
@@ -29,6 +40,67 @@ if os.path.exists(embeddings_path):
     embeddings = np.load(embeddings_path)
     embed_sim = cosine_similarity(embeddings)
 
+# TMDB API Functions
+@lru_cache(maxsize=1000)
+def search_tmdb(title, media_type, year=None):
+    """Search TMDB for a title and return the poster path"""
+    if not TMDB_API_KEY:
+        return None
+
+    try:
+        # Determine media type for TMDB
+        tmdb_media_type = 'movie' if media_type == 'Movie' else 'tv'
+
+        # Search for the title
+        search_url = f'{TMDB_BASE_URL}/search/{tmdb_media_type}'
+        params = {
+            'api_key': TMDB_API_KEY,
+            'query': title,
+            'include_adult': False
+        }
+
+        if year and tmdb_media_type == 'movie':
+            params['year'] = year
+        elif year and tmdb_media_type == 'tv':
+            params['first_air_date_year'] = year
+
+        response = requests.get(search_url, params=params, timeout=5)
+
+        if response.status_code == 200:
+            results = response.json().get('results', [])
+            if results:
+                # Get the first result's poster path
+                poster_path = results[0].get('poster_path')
+                backdrop_path = results[0].get('backdrop_path')
+
+                return {
+                    'poster': f'{TMDB_IMAGE_BASE_URL}{poster_path}' if poster_path else None,
+                    'backdrop': f'{TMDB_IMAGE_BASE_URL}{backdrop_path}' if backdrop_path else None
+                }
+    except Exception as e:
+        print(f'Error fetching TMDB data for {title}: {e}')
+
+    return None
+
+def add_tmdb_images(content_list):
+    """Add TMDB images to a list of content items"""
+    for item in content_list:
+        title = item.get('title', '')
+        media_type = item.get('type', 'Movie')
+        year = item.get('release_year')
+
+        # Search TMDB for images
+        tmdb_data = search_tmdb(title, media_type, year)
+
+        if tmdb_data:
+            item['poster_url'] = tmdb_data.get('poster')
+            item['backdrop_url'] = tmdb_data.get('backdrop')
+        else:
+            item['poster_url'] = None
+            item['backdrop_url'] = None
+
+    return content_list
+
 def recommend(title, similarity_matrix, n=10):
     """Get recommendations for a given title"""
     title_clean = title.lower().strip()
@@ -49,9 +121,17 @@ def recommend(title, similarity_matrix, n=10):
     recs = df.iloc[indices][['title', 'type', 'listed_in', 'release_year', 'description', 'cast', 'director', 'rating', 'duration']].copy()
     recs['similarity'] = [round(similarity_matrix[idx][i], 3) for i in indices]
 
+    # Convert to dict
+    recommendations = recs.to_dict('records')
+
+    # Add TMDB images to source and recommendations
+    source_list = [source]
+    add_tmdb_images(source_list)
+    add_tmdb_images(recommendations)
+
     return {
-        'source': source,
-        'recommendations': recs.to_dict('records')
+        'source': source_list[0],
+        'recommendations': recommendations
     }
 
 @app.route('/')
